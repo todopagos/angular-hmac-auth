@@ -6,27 +6,36 @@
   .factory('hmacInterceptor', function() {
 
     var _host;
-    var _secret;
+    var _whitelist;
     var _accessId;
+    var _secretKey;
 
     var host = function(){
       return typeof(_host) === 'function' ? _host() : _host;
     };
 
-    var secret = function(){
-      return typeof(_secret) === 'function' ? _secret() : _secret;
+    var secretKey = function(){
+      return typeof(_secretKey) === 'function' ? _secretKey() : _secretKey;
     };
 
-    var apiKey = function(){
+    var accessId = function(){
       return typeof(_accessId) === 'function' ? _accessId() : _accessId;
+    };
+
+    var whitelist = function(){
+      return [].concat(typeof(_whitelist) === 'function' ? _whitelist() : _whitelist);
     };
 
     var setHost = function(value){
       _host = value;
     };
 
-    var setSecret = function(value){
-      _secret = value;
+    var setWhitelist = function(value){
+      _whitelist = value;
+    };
+
+    var setSecretKey = function(value){
+      _secretKey = value;
     };
 
     var setAccessId = function(value){
@@ -34,23 +43,38 @@
     };
 
     var authorizationToken = function(){
-      return 'APIAuth '+ apiKey() + ':XXX'
+      return 'APIAuth '+ accessId() + ':XXX'
     };
 
     var request = function(config){
-      config.headers['Authorization'] = authorizationToken();
+      if(config.url.search(host()) > -1) {
 
-      console.debug(config);
+        var isWhitelist = false;
+        var whitelistArray = whitelist();
+        var whitelistLength = whitelistArray.length;
+
+        for (var i = 0; i < whitelistLength; i++) {
+          if(config.url.search(whitelistArray[i]) > -1){
+            isWhitelist = true;
+            break;
+          }
+        }
+
+        if(!isWhitelist) config.headers['Authorization'] = authorizationToken();
+      }
+
       return config;
     };
 
     return {
       setHost: setHost,
+      setWhitelist: setWhitelist,
       setAccessId: setAccessId,
-      setSecret: setSecret,
+      setSecretKey: setSecretKey,
       request: request
     };
 
   });
+
 
 })();
