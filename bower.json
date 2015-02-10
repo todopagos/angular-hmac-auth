@@ -1,0 +1,21 @@
+{
+  "author": "Andres Pache <apache90@gmail.com>",
+  "name": "angular-hmac-auth",
+  "version": "0.0.0",
+  "main": "./src/hmacAuthInterceptor.js",
+  "repository":{
+    "type": "git",
+    "url": "git://github.com/andres99x/angular-hmac-auth.git"
+  },
+  "dependencies": {
+    "angular": "^1.2"
+  },
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
