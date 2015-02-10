@@ -42,8 +42,28 @@
       _accessId = value;
     };
 
-    var authorizationToken = function(){
-      return 'APIAuth '+ accessId() + ':XXX'
+    var setHeaders = function(request){
+    };
+
+    var getCanonicalString = function(request){
+      var contentType = request.headers['CONTENT-MD5'];
+      var contentMD5 = request.headers['CONTENT-MD5'];
+      var requestURL = request.url;
+      var timestamp = request.headers['DATE'];
+
+      return [contentType, contentMD5, requestURL, timestamp].join(':');
+    };
+
+    var signature = function(request){
+      var hmac = CryptoJS.HmacSHA1(getCanonicalString(request), secret());
+      return CryptoJS.enc.Base64.stringify(hmac);
+    };
+
+    var signRequest = function(request){
+      request.headers['DATE'] = Date.now().toString();
+      request.headers['CONTENT-MD5'] = CryptoJS.MD5(request.data);
+      request.headers['CONTENT-TYPE'] = 'application/json';
+      request.headers['Authorization'] = 'APIAuth ' + accessId() + ':' + signature(request);
     };
 
     var request = function(config){
@@ -60,7 +80,7 @@
           }
         }
 
-        if(!isWhitelist) config.headers['Authorization'] = authorizationToken();
+        if(!isWhitelist) signRequest(config);
       }
 
       return config;
@@ -75,6 +95,5 @@
     };
 
   });
-
 
 })();

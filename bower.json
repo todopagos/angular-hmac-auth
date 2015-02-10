@@ -3,12 +3,13 @@
   "name": "angular-hmac-auth",
   "version": "0.0.0",
   "main": "./src/hmacAuthInterceptor.js",
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "git://github.com/andres99x/angular-hmac-auth.git"
   },
   "dependencies": {
-    "angular": "^1.2"
+    "angular": "^1.2",
+    "cryptojslib": "~3.1.2"
   },
   "license": "MIT",
   "ignore": [
