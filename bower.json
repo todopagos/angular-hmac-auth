@@ -1,7 +1,7 @@
 {
   "author": "Andres Pache <apache90@gmail.com>",
   "name": "angular-hmac-auth",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "./src/hmacAuthInterceptor.js",
   "repository": {
     "type": "git",
