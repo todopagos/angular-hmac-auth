@@ -3,6 +3,12 @@
   "name": "angular-hmac-auth",
   "version": "0.0.1",
   "main": "./src/hmacAuthInterceptor.js",
+  "keywords":[
+    "angular",
+    "hmac",
+    "auth",
+    "interceptor"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/andres99x/angular-hmac-auth.git"
