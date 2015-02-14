@@ -16,7 +16,7 @@
         date: 'X_HMAC_DATE',
         authorization: 'X_HMAC_AUTHORIZATION'
       }
-    }
+    };
 
     var getConfig = function(field, isHeader) {
       isHeader = typeof(isHeader) !== 'undefined' ? isHeader : false;
@@ -101,7 +101,7 @@
     };
 
     var contentType = function(request){
-      return getHeader(request, 'Content-Type');
+      return getHeader(request, 'Content-Type') || '';
     }
 
     var relativeURI = function(request){
