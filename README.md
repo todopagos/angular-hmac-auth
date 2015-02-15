@@ -4,11 +4,11 @@ Angular HMAC Auth Interceptor Module
 This is an Angular HTTP Interceptor for 
 [HMAC Authentication](http://en.wikipedia.org/wiki/Hash-based_message_authentication_code).
 
-The Interceptor will sign your requests on the client side so the server can authenticate them. It was made to integrate and play smoothly with [ApiAuth Gem](https://github.com/mgomes/api_auth).
+The Interceptor will sign your requests on the client side so the server can authenticate them. It was made to integrate and play smoothly with [ApiAuth Gem](https://github.com/mgomes/api_auth), but it may probably adapt to your needs, if not please feel free to contibute and help it evolve :).
 
 ## How it works
 
-1. A canonical string is first created using the request HTTP headers as follows:
+1. A canonical string is first created using the request's HTTP headers as follows:
   
         canonicalString = 'X_HMAC_CONTENT_TYPE,X_HMAC_CONTENT_MD5,relativeURI,X_HMAC_DATE';
 
@@ -24,7 +24,7 @@ The Interceptor will sign your requests on the client side so the server can aut
         X_HMAC_AUTHORIZATION = APIAuth 'client accessId':'signature from step 2'
 
 5. On the server side, the SHA1 HMAC is computed in the same way using the
-request headers and the client's `secretKey`, which is known to only
+request's headers and the client's `secretKey`, which is known to only
 the client and the server but can be looked up on the server using the client's
 `accessId` that was attached in the header. The `accessId` can be any integer or
 string that uniquely identifies the client.
@@ -67,26 +67,22 @@ Since this package depends on [`CryptoJS`](https://github.com/sytelus/CryptoJS) 
 
 
 ## Usage
-
-Include the iterceptor as a dependency of the app
 ```javascript
+// Include the iterceptor as a dependency of your app
 angular.module('app', ['hmacAuthInterceptor'])
-```
-Add the interceptor
-```javascript
+
 .config(['$httpProvider', function($httpProvider){
+  // Add the interceptor
   $httpProvider.interceptors.push('hmacInterceptor');
 ])
-```
 
-Configure the interceptor
-```javascript
 .run(['hmacInterceptor', function(hmacInterceptor){
+  // Configure the interceptor
   hmacInterceptor.host = 'localhost:3000';
   hmacInterceptor.whitelist = '/authenticate';
   hmacInterceptor.accessId = '3752df6b0ff34f61b51bdfb48c9dc994a27ed8eca8e9aafc67a6623b4ae7daa1';
   hmacInterceptor.secretKey = 'eb8725fa89da4f7f39ebcbf767c44a527bea098320983304e4f316b2e8532c0a';
-}])
+}]);
 ```
 
 ## Configurations
@@ -94,8 +90,8 @@ Configure the interceptor
 ### Default
 ```javascript
 {
-  host: '',         // { String | function() }
-  whitelist: [],    // { String | Array | function() }
+  host: '',         // { String | Regex | function() }
+  whitelist: [],    // { String | Regex | Array | function() }
   accessId: '',     // { String | function() }
   secretKey: '',    // { String | function() }
   headers: {
