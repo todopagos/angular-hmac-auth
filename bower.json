@@ -1,8 +1,9 @@
 {
-  "author": "Andres Pache <apache90@gmail.com>",
   "name": "angular-hmac-auth",
+  "description": "Angular HMAC Authentication HTTP Interceptor",
+  "author": "Andres Pache <apache90@gmail.com>",
   "version": "0.0.2",
-  "main": "./src/hmacAuthInterceptor.js",
+  "main": "./dist//hmacAuthInterceptor.js",
   "keywords":[
     "angular",
     "hmac",
@@ -22,7 +23,7 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    "src",
+    "test"
   ]
 }
