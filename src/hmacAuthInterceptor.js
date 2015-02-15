@@ -26,7 +26,11 @@
 
     var setConfig = function(field, value, isHeader) {
       isHeader = typeof(isHeader) !== 'undefined' ? isHeader : false;
-      isHeader ? configurations[headers][field] = value : configurations[field] = value;
+      if (isHeader){
+        configurations[headers][field] = value;
+      } else {
+        configurations[field] = value;
+      }
     };
 
     var request = function(config){
@@ -49,15 +53,23 @@
     };
 
     return {
-      set host(v) { setConfig('host', v) },
-      set whitelist(v) { setConfig('whitelist', v) },
-      set accessId(v) { setConfig('accessId', v) },
-      set secretKey(v) { setConfig('secretKeyt', v) },
+      set host(v) { setConfig('host', v); },
+      get host() { getConfig('host'); },
+      set whitelist(v) { setConfig('whitelist', v); },
+      get whitelist() { getConfig('whitelist'); },
+      set accessId(v) { setConfig('accessId', v); },
+      get accessId() { getConfig('accessId'); },
+      set secretKey(v) { setConfig('secretKey', v); },
+      get secretKey() { getConfig('secretKey'); },
       headers: {
-         set contentType(v) { setConfig('contentType', v, true) },
-         set contentMD5(v) { setConfig('contentMD5', v, true) },
-         set date(v) { setConfig('date', v, true) },
-         set authorization(v) { setConfig('authorization', v, true) }
+        set contentType(v) { setConfig('contentType', v, true); },
+        get contentType() { getConfig('contentType', true); },
+        set contentMD5(v) { setConfig('contentMD5', v, true); },
+        get contentMD5() { getConfig('contentMD5', true); },
+        set date(v) { setConfig('date', v, true); },
+        get date() { getConfig('data', true); },
+        set authorization(v) { setConfig('authorization', v, true); },
+        get authorization() { getConfig('authorization', true); }
       },
       request: request
     };
@@ -102,7 +114,7 @@
 
     var contentType = function(request){
       return getHeader(request, 'Content-Type') || '';
-    }
+    };
 
     var relativeURI = function(request){
       return request.url.replace(/^(?:\/\/|[^\/]+)*/, "");
@@ -123,7 +135,7 @@
     };
 
     var setHeader = function(request, field, value){
-      return request.headers[field] = value;
+      request.headers[field] = value;
     };
 
     return {
