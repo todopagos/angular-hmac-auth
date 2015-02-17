@@ -11,7 +11,7 @@ var karma = require('karma').server;
 
 var paths = {
   src: ['./src/**/*.js'],
-  tests: ['./tests/**/*Spec.js']
+  tests: ['./test/**/*Spec.js']
 };
 
 gulp.task('build', function() {

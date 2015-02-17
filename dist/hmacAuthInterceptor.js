@@ -1,9 +1,9 @@
 (function () {
   'use strict';
 
-  angular.module('hmacAuthInterceptor',['hmacAuthInterceptorSigner'])
+  angular.module('hmacAuthInterceptor',['hmacAuthInterceptorSigner', 'hmacAuthInterceptorUtil'])
 
-  .factory('hmacInterceptor',['hmacSigner', function(hmacSigner) {
+  .factory('hmacInterceptor',['hmacSigner', 'urlUtil', function(hmacSigner, urlUtil) {
 
     var configurations = {
       host: '',
@@ -20,27 +20,29 @@
 
     var getConfig = function(field, isHeader) {
       isHeader = typeof(isHeader) !== 'undefined' ? isHeader : false;
-      var value = isHeader ?  configurations[headers][field] : configurations[field];
+      var value = isHeader ?  configurations.headers[field] : configurations[field];
       return angular.isFunction(value) ? value() : value;
     };
 
     var setConfig = function(field, value, isHeader) {
       isHeader = typeof(isHeader) !== 'undefined' ? isHeader : false;
       if (isHeader){
-        configurations[headers][field] = value;
+        configurations.headers[field] = value;
       } else {
         configurations[field] = value;
       }
     };
 
     var request = function(config){
-      if(config.url.search(getConfig('host')) > -1) {
+      var urlHost = urlUtil.getHost(config.url);
+      if(urlHost.search(getConfig('host')) > -1) {
 
         var isWhitelist = false;
         var whitelistArray = [].concat(getConfig('whitelist'));
+        var urlRelativePath = urlUtil.getRelativePath(config.url);
 
         for (var i = 0; i < whitelistArray.length; i++) {
-          if(config.url.search(whitelistArray[i]) > -1){
+          if(urlRelativePath.search(whitelistArray[i]) > -1){
             isWhitelist = true;
             break;
           }
@@ -54,29 +56,31 @@
 
     return {
       set host(v) { setConfig('host', v); },
-      get host() { getConfig('host'); },
+      get host() { return getConfig('host'); },
       set whitelist(v) { setConfig('whitelist', v); },
-      get whitelist() { getConfig('whitelist'); },
+      get whitelist() { return getConfig('whitelist'); },
       set accessId(v) { setConfig('accessId', v); },
-      get accessId() { getConfig('accessId'); },
+      get accessId() { return getConfig('accessId'); },
       set secretKey(v) { setConfig('secretKey', v); },
-      get secretKey() { getConfig('secretKey'); },
+      get secretKey() { return getConfig('secretKey'); },
       headers: {
         set contentType(v) { setConfig('contentType', v, true); },
-        get contentType() { getConfig('contentType', true); },
+        get contentType() { return getConfig('contentType', true); },
         set contentMD5(v) { setConfig('contentMD5', v, true); },
-        get contentMD5() { getConfig('contentMD5', true); },
+        get contentMD5() { return getConfig('contentMD5', true); },
         set date(v) { setConfig('date', v, true); },
-        get date() { getConfig('data', true); },
+        get date() { return getConfig('date', true); },
         set authorization(v) { setConfig('authorization', v, true); },
-        get authorization() { getConfig('authorization', true); }
+        get authorization() { return getConfig('authorization', true); }
       },
       request: request
     };
 
   }]);
 
-  angular.module('hmacAuthInterceptorSigner',[]).factory('hmacSigner', function() {
+  angular.module('hmacAuthInterceptorSigner', ['hmacAuthInterceptorUtil'])
+
+  .factory('hmacSigner', ['urlUtil', function(urlUtil) {
 
     var sign = function(request, accessId, secretKey, headersConfig){
       setCustomHeaders(request, headersConfig);
@@ -86,7 +90,7 @@
     var setCustomHeaders = function(request, headersConfig){
       setHeader(request, headersConfig.contentType, contentType(request));
       setHeader(request, headersConfig.contentMD5, contentMD5(request));
-      setHeader(request, headersConfig.date, timestamp());
+      setHeader(request, headersConfig.date, date(request));
     };
 
     var setAuthorizationHeader = function(request, accessId, secretKey, headersConfig){
@@ -103,13 +107,13 @@
       return [
         getHeader(request, headersConfig.contentType),
         getHeader(request, headersConfig.contentMD5),
-        relativeURI(request),
+        urlUtil.getRelativePath(request.url),
         getHeader(request, headersConfig.date)
       ].join(',');
     };
 
-    var timestamp = function(){
-      return new Date().toUTCString();
+    var date = function(request){
+      return getHeader(request, 'Date') || new Date().toUTCString();
     };
 
     var contentType = function(request){
@@ -140,6 +144,29 @@
 
     return {
       sign: sign
+    };
+
+  }]);
+
+  angular.module('hmacAuthInterceptorUtil',[]).factory('urlUtil', function() {
+
+    var createAnchor  = function(url) {
+      var a = document.createElement("a");
+      a.href = url;
+      return a;
+    };
+
+    var getHost = function(url) {
+      return createAnchor(url).host;
+    };
+
+    var getRelativePath = function(url){
+      return createAnchor(url).pathname;
+    };
+
+    return {
+      getHost: getHost,
+      getRelativePath: getRelativePath
     };
 
   });
