@@ -3,7 +3,7 @@
 
   angular.module('hmacAuthInterceptor',['hmacAuthInterceptorSigner', 'hmacAuthInterceptorUtil'])
 
-  .factory('hmacInterceptor',['hmacSigner', 'urlUtil', function(hmacSigner, urlUtil) {
+  .factory('hmacInterceptor',['hmacSigner', 'hmacUtil', function(hmacSigner, hmacUtil) {
 
     var configurations = {
       host: '',
@@ -34,12 +34,12 @@
     };
 
     var request = function(config){
-      var urlHost = urlUtil.getHost(config.url);
+      var urlHost = hmacUtil.getHost(config.url);
       if(urlHost.search(getConfig('host')) > -1) {
 
         var isWhitelist = false;
         var whitelistArray = [].concat(getConfig('whitelist'));
-        var urlRelativePath = urlUtil.getRelativePath(config.url);
+        var urlRelativePath = hmacUtil.getRelativePath(config.url);
 
         for (var i = 0; i < whitelistArray.length; i++) {
           if(urlRelativePath.search(whitelistArray[i]) > -1){
@@ -80,7 +80,7 @@
 
   angular.module('hmacAuthInterceptorSigner', ['hmacAuthInterceptorUtil'])
 
-  .factory('hmacSigner', ['urlUtil', function(urlUtil) {
+  .factory('hmacSigner', ['hmacUtil', function(hmacUtil) {
 
     var sign = function(request, accessId, secretKey, headersConfig){
       setCustomHeaders(request, headersConfig);
@@ -107,7 +107,7 @@
       return [
         getHeader(request, headersConfig.contentType),
         getHeader(request, headersConfig.contentMD5),
-        urlUtil.getRelativePath(request.url),
+        hmacUtil.getRelativePath(request.url),
         getHeader(request, headersConfig.date)
       ].join(',');
     };
@@ -120,13 +120,9 @@
       return getHeader(request, 'Content-Type') || '';
     };
 
-    var relativeURI = function(request){
-      return request.url.replace(/^(?:\/\/|[^\/]+)*/, "");
-    };
-
     var contentMD5 = function(request){
       var content = body(request);
-      return CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
+      return getHeader(request, 'Content-MD5') || CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
     };
 
     var body = function(request){
@@ -148,7 +144,7 @@
 
   }]);
 
-  angular.module('hmacAuthInterceptorUtil',[]).factory('urlUtil', function() {
+  angular.module('hmacAuthInterceptorUtil',[]).factory('hmacUtil', function() {
 
     var createAnchor  = function(url) {
       var a = document.createElement("a");

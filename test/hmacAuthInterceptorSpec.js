@@ -135,14 +135,6 @@ describe('HMAC Auth Interceptor Module', function(){
         http = _$http_;
         httpBackend = _$httpBackend_;
       });
-
-      httpBackend.whenGET('http://test.com').respond();
-      httpBackend.whenGET('http://test.com/unsigned').respond();
-    });
-
-    beforeEach(function(){
-      //httpBackend.whenGET('http://test.com');
-      //httpBackend.whenGET('http://test.com/unsigned');
     });
 
     it('includes the hmacInterceptor', function () {
@@ -151,18 +143,15 @@ describe('HMAC Auth Interceptor Module', function(){
 
     describe('with matching host', function(){
 
-      afterEach(function(){
-        http.get('http://test.com');
-        http.get('http://test.com/unsigned');
-        httpBackend.flush();
-      });
-
       describe('using a string', function(){
 
         it('intercepts the request', function(){
+          httpBackend.whenGET('http://test.com').respond();
           httpBackend.expectGET('http://test.com', function(headers) {
             return angular.isDefined(headers['X_HMAC_AUTHORIZATION']);
           });
+          http.get('http://test.com');
+          httpBackend.flush();
         });
       });
 
@@ -171,32 +160,241 @@ describe('HMAC Auth Interceptor Module', function(){
         it('intercepts the request', function(){
           hmacInterceptor.host = /t.{2}t/i;
 
+          httpBackend.whenGET('http://test.com').respond();
           httpBackend.expectGET('http://test.com', function(headers) {
             return angular.isDefined(headers['X_HMAC_AUTHORIZATION']);
           });
+          http.get('http://test.com');
+          httpBackend.flush();
         });
       });
 
       describe('and endpont not included in whitelist', function(){
 
-        describe('GET', function(){
+        var methods = ['GET', 'HEAD', 'PATCH', 'JSONP'];
 
-        });
+        for(var i = 0; i < methods.length; i++){
 
-        describe('POST', function(){
+          describe(methods[i], function(){
 
-        });
+            beforeEach(function(){
+              httpBackend.when(methods[i], 'http://test.com').respond();
+            });
 
-        describe('PUT', function(){
+            afterEach(function(){
+              httpBackend.flush();
+            });
 
-        });
+            it('uses the existing Content-Type header if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_TYPE'] == 'text/plain';
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-Type': 'text/plain' },
+              });
+            })
 
-        describe('DELETE', function(){
+            it('sets an empty X_HMAC_CONTENT_TYPE if Content-Type not present', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_TYPE'] == '';
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-Type': null }
+              });
+            });
 
-        });
+            it('calculates the correct contentMD5 for an empty body', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_MD5'] == "1B2M2Y8AsgTpgAmY7PhCfg==";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com'
+              });
+            })
+
+            it('uses the existing Content-MD5 header value if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_MD5'] == "1B2M2Y8AsgTpgAmY7PhCfg==";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-MD5': '1B2M2Y8AsgTpgAmY7PhCfg==' }
+              });
+            })
+
+            it('calculates a X_HMAC_DATE if DATE header not present', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return angular.isDefined(headers['X_HMAC_DATE']);
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com'
+              });
+            });
+
+            it('uses the existing DATE header value if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_DATE'] == "Mon, 23 Jan 1984 03:29:56 GMT";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Date': "Mon, 23 Jan 1984 03:29:56 GMT" }
+              });
+            });
+
+            it('apropiately signs the request', function(){
+              httpBackend.when(methods[i], 'http://test.com/resource.xml').respond();
+              httpBackend.expect(methods[i], 'http://test.com/resource.xml', null, function(headers){
+                return headers['X_HMAC_AUTHORIZATION'] == "APIAuth 3752df6b0ff34f61b51bdfb48c9dc994a27ed8eca8e9aafc67a6623b4ae7daa1:oFVW3M1nOaMvxAsbZ2VcN2fZYSo=";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com/resource.xml',
+                headers: {
+                  'Content-Type': 'text/plain',
+                  'Content-MD5': 'e59ff97941044f85df5297e1c302d260',
+                  'Date': "Mon, 23 Jan 1984 03:29:56 GMT"
+                }
+              });
+            });
+
+          });
+
+        }; // End for
+
+        var methods = ['POST', 'PUT' , 'PATCH'];
+
+        for(var i = 0; i < methods.length; i++){
+
+          describe(methods[i], function(){
+
+            beforeEach(function(){
+              httpBackend.when(methods[i], 'http://test.com').respond();
+            });
+
+            afterEach(function(){
+              httpBackend.flush();
+            });
+
+            it('uses the existing Content-Type header if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_TYPE'] == 'text/plain';
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-Type': 'text/plain' },
+                data: null
+              });
+            })
+
+            it('sets an empty X_HMAC_CONTENT_TYPE if Content-Type not present', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_TYPE'] == '';
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-Type': null },
+                data: null
+              });
+            });
+
+            it('calculates the correct contentMD5 for an empty body', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_CONTENT_MD5'] == "1B2M2Y8AsgTpgAmY7PhCfg==";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com'
+              });
+            })
+
+            it('calculates the correct contentMD5 for a non empty body', function(){
+              httpBackend.expect(methods[i], 'http://test.com', 'hello\nworld', function(headers){
+                return headers['X_HMAC_CONTENT_MD5'] == "kZXQvrKoieG+Be1rsZVINw==";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                data: 'hello\nworld'
+              });
+            })
+
+            it('uses the existing Content-MD5 header value if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', 'hello\nworld', function(headers){
+                return headers['X_HMAC_CONTENT_MD5'] == "1B2M2Y8AsgTpgAmY7PhCfg==";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Content-MD5': '1B2M2Y8AsgTpgAmY7PhCfg==' },
+                data: 'hello\nworld'
+              });
+            })
+
+            it('calculates a X_HMAC_DATE if DATE header not present', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return angular.isDefined(headers['X_HMAC_DATE']);
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com'
+              });
+            });
+
+            it('uses the existing DATE header value if given', function(){
+              httpBackend.expect(methods[i], 'http://test.com', null, function(headers){
+                return headers['X_HMAC_DATE'] == "Mon, 23 Jan 1984 03:29:56 GMT";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com',
+                headers: { 'Date': "Mon, 23 Jan 1984 03:29:56 GMT" },
+                data: null
+              });
+            });
+
+            it('apropiately signs the request', function(){
+              httpBackend.when(methods[i], 'http://test.com/resource.xml').respond();
+              httpBackend.expect(methods[i], 'http://test.com/resource.xml', null, function(headers){
+                return headers['X_HMAC_AUTHORIZATION'] == "APIAuth 3752df6b0ff34f61b51bdfb48c9dc994a27ed8eca8e9aafc67a6623b4ae7daa1:oFVW3M1nOaMvxAsbZ2VcN2fZYSo=";
+              });
+              http({
+                method: methods[i],
+                url: 'http://test.com/resource.xml',
+                headers: {
+                  'Content-Type': 'text/plain',
+                  'Content-MD5': 'e59ff97941044f85df5297e1c302d260',
+                  'Date': "Mon, 23 Jan 1984 03:29:56 GMT"
+                },
+                data: null
+              });
+            });
+
+          });
+
+        }; // End for
+
       });
 
       describe('and endpont included in whitelist', function(){
+
+        beforeEach(function(){
+          httpBackend.whenGET('http://test.com/unsigned').respond();
+        });
+
+        afterEach(function(){
+          http.get('http://test.com/unsigned');
+          httpBackend.flush();
+        });
 
         describe('using a string', function(){
 
@@ -223,6 +421,10 @@ describe('HMAC Auth Interceptor Module', function(){
     }); // End with matching host
 
     describe('with mismatching host', function(){
+
+      beforeEach(function(){
+        httpBackend.whenGET('http://test.com').respond();
+      });
 
       afterEach(function(){
         http.get('http://test.com');

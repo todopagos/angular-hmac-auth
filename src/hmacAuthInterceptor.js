@@ -120,13 +120,9 @@
       return getHeader(request, 'Content-Type') || '';
     };
 
-    var relativeURI = function(request){
-      return request.url.replace(/^(?:\/\/|[^\/]+)*/, "");
-    };
-
     var contentMD5 = function(request){
       var content = body(request);
-      return CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
+      return getHeader(request, 'Content-MD5') || CryptoJS.MD5(content).toString(CryptoJS.enc.Base64);
     };
 
     var body = function(request){
