@@ -4,7 +4,7 @@ Angular HMAC Auth Interceptor Module
 This is an Angular HTTP Interceptor for 
 [HMAC Authentication](http://en.wikipedia.org/wiki/Hash-based_message_authentication_code).
 
-The Interceptor will sign your requests on the client side so the server can authenticate them. It was made to integrate and play smoothly with [ApiAuth Gem](https://github.com/mgomes/api_auth), but it may probably adapt to your needs, if not please feel free to contibute and help it evolve :).
+The Interceptor will sign your requests on the client side so the server can authenticate them. It was made to integrate and play smoothly with [ApiAuth Gem](https://github.com/andres99x/api_auth), but it may probably adapt to your needs, if not please feel free to contibute and help it evolve :).
 
 ## How it works
 
@@ -12,10 +12,10 @@ The Interceptor will sign your requests on the client side so the server can aut
   
         canonicalString = 'X_HMAC_CONTENT_TYPE,X_HMAC_CONTENT_MD5,relativeURI,X_HMAC_DATE';
 
-  - `X_HMAC_CONTENT_TYPE` is a copy of the request's `Content-type`, if `Content-Type` is not present, then a blank string is used in it's place.
-  - `X_HMAC_CONTENT_MD5` is a Base64 encoded MD5 Hash of the request's `body`, if `body` is not present, then a blank string is used in it's place. 
+  - `X_HMAC_CONTENT_TYPE` is a copy of the request's `Content-Type`, if `Content-Type` is not present, then a blank string is used in it's place.
+  - `X_HMAC_CONTENT_MD5` is a copy of the request's `Content-MD5`, if `Content-MD5` is not present, then a Base64 encoded MD5 Hash of the request's `body` is calculated, if `body` is not present, then a blank string is used in it's place. 
   - `relativeURI` is the request's relative url.
-  - `X_HMAC_DATE` is an *RFC 1123* timestamp.
+  - `X_HMAC_DATE` is a copy of the request's `Date`, if `Date` is not present, then a *RFC 1123* timestamp is generated.
 
 2. The cannonical string is then used to create the request's signature which is a Base64 encoded SHA1 HMAC, using the client's private `secretKey`.
 
