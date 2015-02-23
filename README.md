@@ -52,7 +52,7 @@ $ bower update
 Once installed, you can start using the package by simply adding a `<script>` tag to your HTML markup.
 ```html
 <!-- Angular HMAC Auth Interceptor -->
-<script src="[bower_components]/angular-hmac-auth/src/hmacAuthInterceptor.js"></script>
+<script src="[bower_components]/angular-hmac-auth/dist/hmacAuthInterceptor.js"></script>
 ```
 
 Since this package depends on [`CryptoJS`](https://github.com/sytelus/CryptoJS) in order to work properly you will also need to add the following to your to your HTML markup.
